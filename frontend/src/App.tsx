@@ -1,35 +1,64 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
+  
+const [todo, setTodo] = useState("");
+const [todoList, setTodoList] = useState<String[]>([]);
+
+//array : []
+//object : {}
+//array of objects : [{}, {}, {}]
+
+function handleTodo(e:React.SyntheticEvent) {
+  setTodo(e.target.value)
+}
+
+function handleTodoList() {
+
+  setTodoList([...todoList, todo])
+  setTodo("")
+  // console.log(todoList)
+}
+
+function handleDeleteTodo(index: number) {
+ setTodoList(todoList.filter((_, i) => i != index))
+
+}
+function handleEditTodo(index: number) { 
+  if (index === undefined || index === null) {
+    console.log("Todo not found");
+    return;
+  }
+
+  setTodo(todoList[index]);
+}
+
 
   return (
     <>
       <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        {/* <textarea name="" id=""></textarea> */}
+
+        {/* <input type="text" value={todo} onChange={(e) => setTodo(e.target.value)} /> */}
+        <input type="text" value={todo} onChange={handleTodo} />
+        <button onClick={handleTodoList}>Add</button>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+      <div>
+        List
+        <ul>
+          {todoList.map((todo, index) => (
+              <li key={index}>{todo}   <button onClick={() => handleDeleteTodo(index)}>Delete</button>
+              <button onClick={() => handleEditTodo(index)}>Edit</button>
+              </li>
+            
+          ))
 }
 
-export default App
+        </ul>
+      </div>
+    </>
+  );
+}
+
+export default App;
