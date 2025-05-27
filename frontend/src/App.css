@@ -1,20 +1,3 @@
-html, body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-  overflow: hidden;
-}
-
-textarea {
-  height: 100vh;
-  border: none;
-  width: 50vw;
-  background-color: black;
-  box-sizing: border-box;
-  padding: 0;
-  margin:0;
-  border: none;
-  color: white;
-  font-size: 30px; 
+html {
+    color: black;
 }
