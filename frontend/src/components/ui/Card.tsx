@@ -19,7 +19,7 @@ const cardStyles = {
 
 const Card = ({ text = "Bikash", textSize = "medium", color = "bg-black", textColor = "text-white" }) => {
   return (
-    <div className={`${color} ${textColor} ${cardStyles.textSize[textSize]} mx-auto md:w-[35rem]  w-80 mt-4 min-h-40 py-20 rounded-lg shadow-md p-4 text-center`}>
+    <div className={`${color} ${textColor} ${cardStyles.textSize[textSize]} mx-auto md:w-[35rem] w-80 mt-40 min-h-40 py-20 rounded-lg shadow-md p-4 text-center`}>
       {text}
     </div>
   );
