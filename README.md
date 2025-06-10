@@ -24,7 +24,7 @@ This project is a basic implementation of an API client. It allows users to send
 ### Installation
 1. Clone the repository:
    ```bash
-   git clone https://github.com/yourusername/api-client.git
+   git clone https://github.com/bikash1376/pistash
    cd api-client
    ```
 
