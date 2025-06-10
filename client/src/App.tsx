@@ -1,0 +1,436 @@
+import React, { useState, useEffect } from 'react';
+import { Light as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { docco } from 'react-syntax-highlighter/dist/esm/styles/hljs';
+import './App.css';
+
+interface ApiResponse {
+  data?: any;
+  error?: string;
+  contentType?: string;
+  originalUrl?: string;
+  status?: number;
+  statusText?: string;
+  time?: number;
+  size?: number;
+}
+
+interface Header {
+  id: string;
+  key: string;
+  value: string;
+  description: string;
+  enabled: boolean;
+}
+
+function App() {
+  const [url, setUrl] = useState('');
+  const [method, setMethod] = useState('GET');
+  const [headers, setHeaders] = useState<Header[]>([{ id: '1', key: '', value: '', description: '', enabled: true }]);
+  const [requestBody, setRequestBody] = useState('');
+  const [response, setResponse] = useState<ApiResponse | null>(null);
+  const [savedUrls, setSavedUrls] = useState<{ name: string; url: string; method: string; headers: string; body: string }[]>([]);
+  const [urlName, setUrlName] = useState('');
+  const [htmlViewMode, setHtmlViewMode] = useState<'preview' | 'raw'>('preview');
+  const [copiedMessage, setCopiedMessage] = useState('');
+  const [requestTab, setRequestTab] = useState('headers');
+  const [scrapeMode, setScrapeMode] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const storedUrls = localStorage.getItem('apiClientSavedUrls');
+    if (storedUrls) {
+      setSavedUrls(JSON.parse(storedUrls));
+    }
+  }, []);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        setCopiedMessage('Copied!');
+        setTimeout(() => setCopiedMessage(''), 2000);
+      })
+      .catch(err => {
+        console.error('Failed to copy: ', err);
+        setCopiedMessage('Failed to copy!');
+        setTimeout(() => setCopiedMessage(''), 2000);
+      });
+  };
+
+  const handleAddHeader = () => {
+    setHeaders([...headers, { id: String(Date.now()), key: '', value: '', description: '', enabled: true }]);
+  };
+
+  const handleRemoveHeader = (id: string) => {
+    setHeaders(headers.filter(header => header.id !== id));
+  };
+
+  const handleHeaderChange = (id: string, field: keyof Header, value: string | boolean) => {
+    setHeaders(headers.map(header =>
+      header.id === id ? { ...header, [field]: value } : header
+    ));
+  };
+
+  const handleSendRequest = async () => {
+    if (!url) {
+      setResponse({ error: 'Please enter a URL.' });
+      return;
+    }
+
+    if (!scrapeMode && !method) {
+      setResponse({ error: 'Please select a method or enable scrape mode.' });
+      return;
+    }
+
+    setResponse(null); // Clear previous response
+    setLoading(true); // Set loading state
+    const startTime = Date.now();
+
+    try {
+      const parsedHeaders: { [key: string]: string } = {};
+      headers.forEach(h => {
+        if (h.enabled && h.key) {
+          parsedHeaders[h.key.trim()] = h.value.trim();
+        }
+      });
+
+      let dataToSend: any = requestBody;
+      if (parsedHeaders['Content-Type'] && parsedHeaders['Content-Type'].includes('application/json')) {
+        try {
+          dataToSend = JSON.parse(requestBody);
+        } catch (e) {
+          setResponse({ error: 'Invalid JSON in request body.' });
+          setLoading(false);
+          return;
+        }
+      }
+
+      const requestBodyToSend: any = {
+        url,
+        scrapeMode,
+      };
+
+      if (!scrapeMode) {
+        requestBodyToSend.method = method;
+        requestBodyToSend.headers = parsedHeaders;
+        requestBodyToSend.data = dataToSend;
+      }
+
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/proxy`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBodyToSend),
+      });
+
+      const contentType = res.headers.get('content-type');
+      const contentLength = res.headers.get('content-length');
+      const responseSize = contentLength ? parseInt(contentLength, 10) : 0; // Bytes
+      const endTime = Date.now();
+      const requestTime = endTime - startTime; // Milliseconds
+
+      let resultData;
+
+      if (contentType && contentType.includes('application/json')) {
+        resultData = await res.json();
+      } else if (contentType && contentType.includes('text/html')) {
+        resultData = await res.text();
+      } else {
+        resultData = await res.text(); // Default to text for other types
+      }
+      
+      setResponse({
+        data: resultData,
+        contentType: contentType || 'text/plain',
+        originalUrl: url,
+        status: res.status,
+        statusText: res.statusText,
+        time: requestTime,
+        size: responseSize,
+      });
+      setHtmlViewMode('preview'); // Reset to preview mode on new HTML response
+
+    } catch (error: any) {
+      const endTime = Date.now();
+      const requestTime = endTime - startTime; // Milliseconds
+      setResponse({ error: `Request failed: ${error.message}`, time: requestTime });
+    } finally {
+      setLoading(false); // Always stop loading, regardless of success or error
+    }
+  };
+
+  const handleSaveUrl = () => {
+    if (urlName && url) {
+      const newSavedUrls = [...savedUrls, { name: urlName, url, method: scrapeMode ? 'SCRAPE' : method, headers: JSON.stringify(headers), body: requestBody }];
+      setSavedUrls(newSavedUrls);
+      localStorage.setItem('apiClientSavedUrls', JSON.stringify(newSavedUrls));
+      setUrlName('');
+    } else {
+      alert('Please enter a name and URL to save.');
+    }
+  };
+
+  const handleLoadUrl = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedUrlName = e.target.value;
+    const selectedUrl = savedUrls.find(su => su.name === selectedUrlName);
+    if (selectedUrl) {
+      setUrl(selectedUrl.url);
+      setMethod(selectedUrl.method === 'SCRAPE' ? 'GET' : selectedUrl.method); // Default to GET if SCRAPE is loaded
+      setScrapeMode(selectedUrl.method === 'SCRAPE');
+      setHeaders(JSON.parse(selectedUrl.headers)); // Parse headers back to array
+      setRequestBody(selectedUrl.body);
+    }
+  };
+
+  return (
+    <div className="container">
+      <div className="request-section-container">
+        <div className="url-bar">
+          <select onChange={handleLoadUrl} value="">
+            <option value="">Load Saved URL</option>
+            {savedUrls.map((su, index) => (
+              <option key={index} value={su.name}>{su.name}</option>
+            ))}
+          </select>
+          <input
+            type="text"
+            placeholder="Enter URL"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            disabled={loading}
+            className={loading ? 'disabled' : ''}
+          />
+          {!scrapeMode && (
+            <select 
+              value={method} 
+              onChange={(e) => setMethod(e.target.value)}
+              disabled={loading}
+              className={loading ? 'disabled' : ''}
+            >
+              <option value="GET">GET</option>
+              <option value="POST">POST</option>
+              <option value="PUT">PUT</option>
+              <option value="DELETE">DELETE</option>
+            </select>
+          )}
+          <button 
+            onClick={handleSendRequest} 
+            disabled={loading} 
+            className="send-button"
+          >
+            {loading ? (
+              <>
+                <div className="loading-spinner"></div>
+                Sending...
+              </>
+            ) : (
+              'Send'
+            )}
+          </button>
+          <label className="scrape-toggle">
+            <input
+              type="checkbox"
+              checked={scrapeMode}
+              onChange={(e) => {
+                setScrapeMode(e.target.checked);
+                setResponse(null);
+              }}
+              disabled={loading}
+            />
+            Scrape Mode
+          </label>
+        </div>
+
+        <div className="save-url-section">
+          <input
+            type="text"
+            placeholder="Name for URL (e.g., 'Login API')"
+            value={urlName}
+            onChange={(e) => setUrlName(e.target.value)}
+            disabled={loading}
+            className={loading ? 'disabled' : ''}
+          />
+          <button 
+            onClick={handleSaveUrl}
+            disabled={loading}
+            className={loading ? 'disabled' : ''}
+          >
+            Save URL
+          </button>
+        </div>
+
+        {!scrapeMode && (
+          <div className="request-tabs">
+            <button className={requestTab === 'headers' ? 'active' : ''} onClick={() => setRequestTab('headers')}>Headers</button>
+            <button className={requestTab === 'body' ? 'active' : ''} onClick={() => setRequestTab('body')}>Body</button>
+          </div>
+        )}
+
+        {!scrapeMode && requestTab === 'headers' && (
+          <div className="headers-section">
+            {headers.map((header, index) => (
+              <div key={header.id} className="header-row">
+                <input
+                  type="checkbox"
+                  checked={header.enabled}
+                  onChange={(e) => handleHeaderChange(header.id, 'enabled', e.target.checked)}
+                  disabled={loading}
+                />
+                <input
+                  type="text"
+                  placeholder="Key"
+                  value={header.key}
+                  onChange={(e) => handleHeaderChange(header.id, 'key', e.target.value)}
+                  disabled={loading}
+                  className={loading ? 'disabled' : ''}
+                />
+                <input
+                  type="text"
+                  placeholder="Value"
+                  value={header.value}
+                  onChange={(e) => handleHeaderChange(header.id, 'value', e.target.value)}
+                  disabled={loading}
+                  className={loading ? 'disabled' : ''}
+                />
+                <input
+                  type="text"
+                  placeholder="Description"
+                  value={header.description}
+                  onChange={(e) => handleHeaderChange(header.id, 'description', e.target.value)}
+                  disabled={loading}
+                  className={loading ? 'disabled' : ''}
+                />
+                <button 
+                  onClick={() => handleRemoveHeader(header.id)}
+                  disabled={loading}
+                  className={loading ? 'disabled' : ''}
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <button 
+              onClick={handleAddHeader} 
+              className="add-header-button"
+              disabled={loading}
+            >
+              Add Header
+            </button>
+          </div>
+        )}
+
+        {!scrapeMode && requestTab === 'body' && (
+          <div className="body-editor">
+            <textarea
+              placeholder={`Enter JSON or plain text body\n(e.g., {\"key\": \"value\"})`}
+              value={requestBody}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setRequestBody(e.target.value)}
+              disabled={loading}
+              className={loading ? 'disabled' : ''}
+            ></textarea>
+          </div>
+        )}
+
+        {scrapeMode && (
+          <p className="scrape-info">
+            Scrape mode enabled: Only URL is used. Method, Headers, and Body are ignored.
+          </p>
+        )}
+      </div>
+
+      <div className="response-section-container">
+        <h2>Response</h2>
+        {loading && <p className="loading-message">Loading...</p>}
+        {response && response.status && (
+          <div className="response-summary">
+            <span className={`status-code ${response.status >= 200 && response.status < 300 ? 'success' : response.status >= 400 ? 'error' : 'info'}`}>
+              {response.status} {response.statusText || ''}
+            </span>
+            {response.time !== undefined && <span>Time: {response.time} ms</span>}
+            {response.size !== undefined && <span>Size: {response.size} B</span>}
+          </div>
+        )}
+
+        {response?.contentType?.includes('text/html') ? (
+          <div>
+            <div className="response-tabs">
+              <button
+                className={htmlViewMode === 'preview' ? 'active' : ''}
+                onClick={() => setHtmlViewMode('preview')}
+              >
+                Preview
+              </button>
+              <button
+                className={htmlViewMode === 'raw' ? 'active' : ''}
+                onClick={() => setHtmlViewMode('raw')}
+              >
+                Raw HTML
+              </button>
+              <button onClick={() => response.data && handleCopy(response.data)} className="copy-button">
+                Copy Raw HTML
+              </button>
+              {copiedMessage && <span className="copied-message">{copiedMessage}</span>}
+            </div>
+            {htmlViewMode === 'preview' ? (
+              <>
+                <iframe
+                  // Use srcDoc for scraped HTML to display it directly
+                  srcDoc={scrapeMode && response.data ? response.data : undefined}
+                  // Fallback to originalUrl if not scrape mode or if srcDoc doesn't work (for external sites)
+                  src={!scrapeMode && response.originalUrl ? response.originalUrl : undefined}
+                  title="Response Content"
+                  style={{ width: '100%', height: '400px', border: '1px solid #ccc' }}
+                ></iframe>
+                <p style={{ color: '#888', fontSize: '12px', marginTop: '10px' }}>
+                  Note: Preview might not render correctly due to missing relative resources (CSS, JS, images) or browser security policies.
+                </p>
+              </>
+            ) : (
+              <SyntaxHighlighter language="html" style={docco} customStyle={{ textAlign: 'left' }}>
+                {response.data}
+              </SyntaxHighlighter>
+            )}
+          </div>
+        ) : (
+          <div>
+            <div className="response-controls">
+              {response?.data || response?.error ? (
+                <button onClick={() => {
+                  if (response.error) {
+                    handleCopy(JSON.stringify({ error: response.error }, null, 2));
+                  } else if (typeof response.data === 'object') {
+                    handleCopy(JSON.stringify(response.data, null, 2));
+                  } else {
+                    handleCopy(response.data);
+                  }
+                }} className="copy-button">
+                  Copy Response
+                </button>
+              ) : null}
+              {copiedMessage && <span className="copied-message">{copiedMessage}</span>}
+            </div>
+            {response?.error ? (
+              <SyntaxHighlighter language="json" style={docco} customStyle={{ textAlign: 'left' }}>
+                {JSON.stringify({ error: response.error }, null, 2)}
+              </SyntaxHighlighter>
+            ) : response?.data ? (
+              typeof response.data === 'object' ? (
+                <SyntaxHighlighter language="json" style={docco} customStyle={{ textAlign: 'left' }}>
+                  {JSON.stringify(response.data, null, 2)}
+                </SyntaxHighlighter>
+              ) : (
+                <SyntaxHighlighter language="plaintext" style={docco} customStyle={{ textAlign: 'left' }}>
+                  {response.data}
+                </SyntaxHighlighter>
+              )
+            ) : (
+              <pre style={{ textAlign: 'left' }}>No response yet.</pre>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+export default App;
