@@ -268,7 +268,7 @@ function App() {
 
         {!scrapeMode && requestTab === 'headers' && (
           <div className="headers-section">
-            {headers.map((header, index) => (
+            {headers.map((header) => (
               <div key={header.id} className="header-row">
                 <input
                   type="checkbox"
