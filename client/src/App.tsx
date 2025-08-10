@@ -1,5 +1,4 @@
-import { ThemeProvider } from "@/components/theme-provider"
-
+import { ThemeProvider } from "@/components/theme-provider";
 
 import { useState, useEffect } from "react";
 import { Light as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -58,11 +57,14 @@ export default function App() {
   const [response, setResponse] = useState<ApiResponse | null>(null);
   const [savedUrls, setSavedUrls] = useState<SavedUrl[]>([]);
   const [urlName, setUrlName] = useState("");
-  const [htmlViewMode, setHtmlViewMode] = useState<"preview" | "raw">("preview");
+  const [htmlViewMode, setHtmlViewMode] = useState<"preview" | "raw">(
+    "preview"
+  );
   const [copiedMessage, setCopiedMessage] = useState("");
   const [scrapeMode, setScrapeMode] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [abortController, setAbortController] = useState<AbortController | null>(null);
+  const [abortController, setAbortController] =
+    useState<AbortController | null>(null);
 
   useEffect(() => {
     const storedUrls = localStorage.getItem("apiClientSavedUrls");
@@ -93,7 +95,13 @@ export default function App() {
   const handleAddHeader = () => {
     setHeaders([
       ...headers,
-      { id: String(Date.now()), key: "", value: "", description: "", enabled: true },
+      {
+        id: String(Date.now()),
+        key: "",
+        value: "",
+        description: "",
+        enabled: true,
+      },
     ]);
   };
 
@@ -101,7 +109,11 @@ export default function App() {
     setHeaders(headers.filter((header) => header.id !== id));
   };
 
-  const handleHeaderChange = (id: string, field: keyof Header, value: string | boolean) => {
+  const handleHeaderChange = (
+    id: string,
+    field: keyof Header,
+    value: string | boolean
+  ) => {
     setHeaders(
       headers.map((header) =>
         header.id === id ? { ...header, [field]: value } : header
@@ -241,247 +253,252 @@ export default function App() {
   };
 
   return (
-     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-
-    <div className="flex flex-col md:flex-row min-h-screen">
-    
-
-      {/* Sidebar */}
-      <aside className="w-full md:w-64 border-r p-4 order-3 md:order-1">
-        
-        <h3 className="font-bold mb-2">Saved Requests</h3>
-        <ScrollArea className="h-[calc(100vh-100px)]">
-          <ul className="space-y-1">
-            {savedUrls.map((su, index) => (
-              <li
-                key={index}
-                className="flex justify-between items-center bg-gray-50 p-2 rounded hover:bg-gray-100"
-              >
-                <span
-                  className="cursor-pointer text-blue-600 hover:underline"
-                  onClick={() => handleLoadUrl(su)}
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+      <div className="flex flex-col md:flex-row min-h-screen">
+        {/* Sidebar */}
+        <aside className="w-full md:w-64 border-r p-4 order-3 md:order-1">
+          <h3 className="font-bold mb-2">Saved Requests</h3>
+          <ScrollArea className="h-[calc(100vh-100px)]">
+            <ul className="space-y-1">
+              {savedUrls.map((su, index) => (
+                <li
+                  key={index}
+                  className="flex justify-between items-center bg-gray-50 p-2 rounded hover:bg-gray-100"
                 >
-                  {su.name}
-                </span>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDeleteUrl(index)}
-                >
-                  ✕
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </ScrollArea>
-      </aside>
-
-      <main className="flex-1 p-4 space-y-4 order-2 md:order-2">
-        {/* Request Bar */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Request</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
-            <div className="flex flex-col md:flex-row gap-2">
-              <Select value={method} onValueChange={setMethod}>
-                <SelectTrigger className="w-28">
-                  <SelectValue placeholder="Method" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="GET">GET</SelectItem>
-                  <SelectItem value="POST">POST</SelectItem>
-                  <SelectItem value="PUT">PUT</SelectItem>
-                  <SelectItem value="DELETE">DELETE</SelectItem>
-                </SelectContent>
-              </Select>
-
-              <Input
-                placeholder="Enter URL"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-              />
-              <Input
-                placeholder="Name to Save"
-                value={urlName}
-                onChange={(e) => setUrlName(e.target.value)}
-              />
-
-              <Button onClick={handleSendRequest} disabled={loading}>
-                {loading ? "Sending..." : "Send"}
-              </Button>
-              {loading && (
-                <Button variant="destructive" onClick={handleCancelRequest}>
-                  Cancel
-                </Button>
-              )}
-              <Button onClick={handleSaveUrl}>Save</Button>
-              <Button
-                variant={scrapeMode ? "secondary" : "outline"}
-                onClick={() => {
-                  setScrapeMode(!scrapeMode);
-                  setResponse(null);
-                }}
-              >
-                {scrapeMode ? "🌐 Scrape Mode" : "🌐 Normal Mode"}
-              </Button>
-            </div>
-
-            {/* Headers Editor */}
-            <div>
-              <h4 className="font-semibold mb-2">Headers</h4>
-              {headers.map((header) => (
-                <div key={header.id} className="flex gap-2 mb-2">
-                  <Input
-                    placeholder="Key"
-                    value={header.key}
-                    onChange={(e) =>
-                      handleHeaderChange(header.id, "key", e.target.value)
-                    }
-                  />
-                  <Input
-                    placeholder="Value"
-                    value={header.value}
-                    onChange={(e) =>
-                      handleHeaderChange(header.id, "value", e.target.value)
-                    }
-                  />
+                  <span
+                    className="cursor-pointer text-blue-600 hover:underline"
+                    onClick={() => handleLoadUrl(su)}
+                  >
+                    {su.name}
+                  </span>
                   <Button
                     variant="destructive"
                     size="sm"
-                    onClick={() => handleRemoveHeader(header.id)}
+                    onClick={() => handleDeleteUrl(index)}
                   >
                     ✕
                   </Button>
-                </div>
+                </li>
               ))}
-              <Button size="sm" onClick={handleAddHeader}>
-                + Add Header
-              </Button>
-            </div>
+            </ul>
+          </ScrollArea>
+        </aside>
 
-            {/* Body */}
-            <div>
-              <h4 className="font-semibold mb-2">Body</h4>
-              <Textarea
-                placeholder="Request body (JSON, text, etc.)"
-                value={requestBody}
-                onChange={(e) => setRequestBody(e.target.value)}
-                className="min-h-[100px]"
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <main className="flex-1 p-4 space-y-4 order-2 md:order-2">
+          {/* Request Bar */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Request</CardTitle>
+            </CardHeader>
+            <CardContent className="flex flex-col gap-2">
+              <div className="flex flex-col md:flex-row gap-2">
+                <Select value={method} onValueChange={setMethod}>
+                  <SelectTrigger className="w-28">
+                    <SelectValue placeholder="Method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="GET">GET</SelectItem>
+                    <SelectItem value="POST">POST</SelectItem>
+                    <SelectItem value="PUT">PUT</SelectItem>
+                    <SelectItem value="DELETE">DELETE</SelectItem>
+                  </SelectContent>
+                </Select>
 
-  {/* Response */}
-<Card>
-  <CardHeader>
-    <CardTitle>Response</CardTitle>
-  </CardHeader>
-  <CardContent className="whitespace-pre-wrap break-words">
-    {loading && <p>Loading...</p>}
-    {response && (
-      <>
-        {response.status && (
-          <div className="mb-2">
-            <span>
-              {response.status} {response.statusText}
-            </span>
-            {response.time !== undefined && (
-              <span> | {response.time} ms</span>
-            )}
-            {response.size !== undefined && (
-              <span> | {response.size} B</span>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="ml-2"
-              onClick={() => handleCopy(response.data || response.error || "")}
+                <Input
+                  placeholder="Enter URL"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+                <Input
+                  placeholder="Name to Save"
+                  value={urlName}
+                  onChange={(e) => setUrlName(e.target.value)}
+                />
+
+                <Button onClick={handleSendRequest} disabled={loading}>
+                  {loading ? "Sending..." : "Send"}
+                </Button>
+                {loading && (
+                  <Button variant="destructive" onClick={handleCancelRequest}>
+                    Cancel
+                  </Button>
+                )}
+                <Button onClick={handleSaveUrl}>Save</Button>
+                <Button
+                  variant={scrapeMode ? "secondary" : "outline"}
+                  onClick={() => {
+                    setScrapeMode(!scrapeMode);
+                    setResponse(null);
+                  }}
+                >
+                  {scrapeMode ? "🌐 Scrape Mode" : "🌐 Normal Mode"}
+                </Button>
+              </div>
+
+              {/* Headers Editor */}
+              <div>
+                <h4 className="font-semibold mb-2">Headers</h4>
+                {headers.map((header) => (
+                  <div key={header.id} className="flex gap-2 mb-2">
+                    <Input
+                      placeholder="Key"
+                      value={header.key}
+                      onChange={(e) =>
+                        handleHeaderChange(header.id, "key", e.target.value)
+                      }
+                    />
+                    <Input
+                      placeholder="Value"
+                      value={header.value}
+                      onChange={(e) =>
+                        handleHeaderChange(header.id, "value", e.target.value)
+                      }
+                    />
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleRemoveHeader(header.id)}
+                    >
+                      ✕
+                    </Button>
+                  </div>
+                ))}
+                <Button size="sm" onClick={handleAddHeader}>
+                  + Add Header
+                </Button>
+              </div>
+
+              {/* Body */}
+              <div>
+                <h4 className="font-semibold mb-2">Body</h4>
+                <Textarea
+                  placeholder="Request body (JSON, text, etc.)"
+                  value={requestBody}
+                  onChange={(e) => setRequestBody(e.target.value)}
+                  className="min-h-[100px]"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Response */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Response</CardTitle>
+            </CardHeader>
+            <CardContent className="whitespace-pre-wrap break-words">
+              {loading && <p>Loading...</p>}
+              {response && (
+                <>
+                  {response.status && (
+                    <div className="mb-2">
+                      <span>
+                        {response.status} {response.statusText}
+                      </span>
+                      {response.time !== undefined && (
+                        <span> | {response.time} ms</span>
+                      )}
+                      {response.size !== undefined && (
+                        <span> | {response.size} B</span>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="ml-2"
+                        onClick={() =>
+                          handleCopy(response.data || response.error || "")
+                        }
+                      >
+                        Copy
+                      </Button>
+                      {copiedMessage && (
+                        <span className="ml-2">{copiedMessage}</span>
+                      )}
+                    </div>
+                  )}
+
+                  {response.contentType?.includes("text/html") ? (
+                    htmlViewMode === "preview" ? (
+                      <iframe
+                        srcDoc={
+                          scrapeMode && typeof response.data === "string"
+                            ? response.data
+                            : undefined
+                        }
+                        src={
+                          !scrapeMode && response.originalUrl
+                            ? response.originalUrl
+                            : undefined
+                        }
+                        className="w-full h-96 border "
+                      />
+                    ) : (
+                      <SyntaxHighlighter
+                        language="html"
+                        style={docco}
+                        wrapLongLines
+                      >
+                        {String(response.data)}
+                      </SyntaxHighlighter>
+                    )
+                  ) : (
+                    <SyntaxHighlighter
+                      language="json"
+                      style={docco}
+                      wrapLongLines
+                    >
+                      {JSON.stringify(response.data || response.error, null, 2)}
+                    </SyntaxHighlighter>
+                  )}
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Social */}
+          <div className="flex space-x-4 mt-4">
+            <a
+              href="https://github.com/bikash1376"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              Copy
-            </Button>
-            {copiedMessage && <span className="ml-2">{copiedMessage}</span>}
+              <FaGithub />
+            </a>
+            <a
+              href="https://linkedin.com/in/bikash1376"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaLinkedin />
+            </a>
+            <a
+              href="https://x.com/bikash1376"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <FaTwitter />
+            </a>
+            <Link to="/home" className="">
+              <IoArrowBack />
+            </Link>
           </div>
-        )}
+        </main>
 
-        {response.contentType?.includes("text/html") ? (
-          htmlViewMode === "preview" ? (
-            <iframe
-              srcDoc={
-                scrapeMode && typeof response.data === "string"
-                  ? response.data
-                  : undefined
-              }
-              src={
-                !scrapeMode && response.originalUrl
-                  ? response.originalUrl
-                  : undefined
-              }
-              className="w-full h-96 border"
-            />
-          ) : (
-            <SyntaxHighlighter
-              language="html"
-              style={docco}
-              wrapLongLines
-            >
-              {String(response.data)}
-            </SyntaxHighlighter>
-          )
-        ) : (
-          <SyntaxHighlighter
-            language="json"
-            style={docco}
-            wrapLongLines
-          >
-            {JSON.stringify(response.data || response.error, null, 2)}
-          </SyntaxHighlighter>
-        )}
-      </>
-    )}
-  </CardContent>
-</Card>
+        {/* Main */}
 
-
-        {/* Social */}
-        <div className="flex space-x-4 mt-4">
-          <a
-            href="https://github.com/bikash1376"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FaGithub />
-          </a>
-          <a
-            href="https://linkedin.com/in/bikash1376"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FaLinkedin />
-          </a>
-          <a
-            href="https://x.com/bikash1376"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <FaTwitter />
-          </a>
-            <Link to='/home' className=""><IoArrowBack /></Link>
-          
-        </div>
-      </main>
-
-      {/* Main */}
- 
         <div className="order-1 justify-between md:order-3 flex p-4">
-          <Link to='/home' className="md:hidden">Pistash</Link>
-  <ModeToggle />
-
-</div>
-
-
-    </div>
-        </ThemeProvider>
+          <Link to="/home" className="md:hidden tracking-widest">
+            Pistash
+          </Link>
+          <ModeToggle />
+        </div>
+        <div className="w-full px-4 absolute bottom-5">
+        <p className="select-none text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-center tracking-widest text-muted-foreground opacity-10">
+          pistash
+        </p>
+      </div>
+      </div>
+      
+    </ThemeProvider>
   );
 }

@@ -1,12 +1,15 @@
 
 import { Link } from "react-router-dom";
+import { HashLink } from 'react-router-hash-link';
+
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion'
-import { Github, ArrowRight, Zap, Shield, Smartphone, Monitor, Tablet } from 'lucide-react'
+import { Github, ArrowRight, Zap, Shield, Smartphone, Monitor} from 'lucide-react'
 import { ModeToggle } from "./components/mode-toggle";
 import { ThemeProvider } from "./components/theme-provider";
+import { MdArrowOutward } from "react-icons/md";
 
 export default function Home() {
   return (
@@ -17,7 +20,7 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Link to="/" className="text-2xl font-bold text-primary">
+              <Link to="/" className="text-2xl font-normal text-primary tracking-widest">
                 Pistash
               </Link>
             </div>
@@ -35,12 +38,16 @@ export default function Home() {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-20 lg:py-32">
+      <section id="about" className="py-20 lg:py-32">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-4xl mx-auto">
+          <Link to='/'>
             <Badge variant="outline" className="mb-4">
-              Modern API Testing
+              Try it out <MdArrowOutward />
             </Badge>
+
+            </Link>
+      
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight mb-6">
               Test APIs with{' '}
               <span className="text-primary">pistash</span>
@@ -68,26 +75,22 @@ export default function Home() {
               Watch how easy it is to test your APIs with our intuitive interface
             </p>
           </div>
-          <div className="max-w-5xl mx-auto">
-            <div className="relative aspect-video rounded-lg overflow-hidden shadow-2xl">
-              <video 
-                className="w-full h-full object-cover"
-                autoPlay 
-                muted 
-                loop 
-                playsInline
-              >
-                <source src="/placeholder-video.mp4" type="video/mp4" />
-                {/* Fallback for browsers that don't support video */}
-                <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
-                  <div className="text-center">
-                    <Monitor className="h-16 w-16 mx-auto mb-4 text-primary" />
-                    <p className="text-lg text-muted-foreground">API Testing Dashboard Preview</p>
-                  </div>
-                </div>
-              </video>
-            </div>
-          </div>
+         <div className="max-w-5xl mx-auto">
+  <div className="relative aspect-video rounded-lg overflow-hidden shadow-2xl">
+    <img
+      src="./image.png"
+      alt="API Testing Dashboard Preview"
+      className="w-full h-full border-4 border-slate-300"
+    />
+    <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center">
+      <div className="text-center">
+        <Monitor className="h-16 w-16 mx-auto mb-4 text-primary" />
+        <p className="text-lg text-muted-foreground">API Testing Dashboard Preview</p>  
+      </div>
+    </div>
+  </div>
+</div>
+
         </div>
       </section>
 
@@ -149,16 +152,16 @@ export default function Home() {
       {/* Screenshots Section */}
       <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
+          {/* <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">Beautiful on Every Device</h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               pistash looks great and works seamlessly across all your devices
             </p>
-          </div>
+          </div> */}
           
           <div className="grid lg:grid-cols-3 gap-8 items-end">
             {/* Desktop Screenshot */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="relative mb-6">
                 <div className="bg-gradient-to-br from-slate-900 to-slate-700 p-2 rounded-t-lg">
                   <div className="flex space-x-1 mb-2">
@@ -173,10 +176,10 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Desktop</h3>
               <p className="text-muted-foreground">Full-featured experience with sidebar and all tools visible</p>
-            </div>
+            </div> */}
 
             {/* Tablet Screenshot */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="relative mb-6 mx-auto max-w-sm">
                 <div className="bg-slate-800 p-4 rounded-2xl">
                   <div className="bg-background rounded-lg aspect-[4/3] flex items-center justify-center">
@@ -186,10 +189,10 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Tablet</h3>
               <p className="text-muted-foreground">Optimized layout with collapsible sidebar for better space usage</p>
-            </div>
+            </div> */}
 
             {/* Mobile Screenshot */}
-            <div className="text-center">
+            {/* <div className="text-center">
               <div className="relative mb-6 mx-auto max-w-xs">
                 <div className="bg-slate-900 p-2 rounded-3xl">
                   <div className="bg-background rounded-2xl aspect-[9/16] flex items-center justify-center">
@@ -199,13 +202,13 @@ export default function Home() {
               </div>
               <h3 className="text-lg font-semibold mb-2">Mobile</h3>
               <p className="text-muted-foreground">Touch-optimized interface with drawer navigation</p>
-            </div>
+            </div> */}
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20">
+      <section id="faq" className="py-20 ">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold mb-4">Frequently Asked Questions</h2>
@@ -283,7 +286,7 @@ export default function Home() {
               </p>
               <div className="flex space-x-4">
                 <Button variant="ghost" size="icon" asChild>
-                  <Link to="https://github.com" target="_blank" rel="noopener noreferrer">
+                  <Link to="https://github.com/bikash1376" target="_blank" rel="noopener noreferrer">
                     <Github className="h-5 w-5" />
                     <span className="sr-only">GitHub</span>
                   </Link>
@@ -294,18 +297,18 @@ export default function Home() {
             <div>
               <h3 className="font-semibold mb-4">Product</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li><Link to="/dashboard" className="hover:text-foreground transition-colors">Dashboard</Link></li>
-                <li><Link to="#features" className="hover:text-foreground transition-colors">Features</Link></li>
-                <li><Link to="#faq" className="hover:text-foreground transition-colors">FAQ</Link></li>
+                <li><Link to="/" className="hover:text-foreground transition-colors">Dashboard</Link></li>
+                <li><HashLink smooth to="#about" className="hover:text-foreground transition-colors">About</HashLink></li>
+                <li><HashLink smooth to="#faq" className="hover:text-foreground transition-colors">FAQ</HashLink></li>
               </ul>
             </div>
             
             <div>
-              <h3 className="font-semibold mb-4">Resources</h3>
+              <h3 className="font-semibold mb-4">Links</h3>
               <ul className="space-y-2 text-muted-foreground">
-                <li><Link to="#" className="hover:text-foreground transition-colors">Documentation</Link></li>
-                <li><Link to="#" className="hover:text-foreground transition-colors">API Reference</Link></li>
-                <li><Link to="#" className="hover:text-foreground transition-colors">Support</Link></li>
+                <li><Link to="https://github.com/bikash1376/pistash" className="hover:text-foreground transition-colors">Github</Link></li>
+                <li><Link to="https://github.com/bikash1376/pistash/issues" className="hover:text-foreground transition-colors">Issues</Link></li>
+                <li><Link to="https://x.com/bikash1376" className="hover:text-foreground transition-colors">Feedback</Link></li>
               </ul>
             </div>
           </div>
