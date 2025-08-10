@@ -13,7 +13,7 @@ This project is a basic implementation of an API client. It allows users to send
 ## Tech Stack
 - **Frontend:** React, TypeScript, Vite
 - **Backend:** Node.js, Express
-- **Styling:** CSS
+- **Styling:** Tailwind CSS, Shadcn
 
 ## Getting Started
 
@@ -64,5 +64,3 @@ This project is a basic implementation of an API client. It allows users to send
 ## Contributing
 Contributions are welcome! Please feel free to submit a Pull Request.
 
-## License
-This project is licensed under the MIT License - see the LICENSE file for details. 
